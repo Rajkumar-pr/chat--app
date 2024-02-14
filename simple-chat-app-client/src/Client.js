@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { useEffect, useState } from "react";
-
+import './Client.css'
 const socket = io.connect("http://localhost:3001");
 
 function Client() {
@@ -9,7 +9,7 @@ function Client() {
 
   // Messages States
   const [message, setMessage] = useState("");
-  const [messageReceived, setMessageReceived] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const joinRoom = () => {
     if (room !== "") {
@@ -19,11 +19,12 @@ function Client() {
 
   const sendMessage = () => {
     socket.emit("send_message", { message, room });
+    setMessage(""); // Clear input after sending message
   };
 
   useEffect(() => {
     const socketListener = socket.on("receive_message", (data) => {
-      setMessageReceived(data.message);
+      setMessages((prevMessages) => [...prevMessages, data.message]);
     });
 
     // Cleanup function to remove the listener when component unmounts
@@ -33,23 +34,32 @@ function Client() {
   }, []);
 
   return (
-    <div className="App">
+    <div className="chat-screen">
+      <div className="chat-messages">
+        {messages.map((msg, index) => (
+          <div key={index}>{msg}</div>
+        ))}
+      </div>
+      <div className="chat-input">
+        <input
+          placeholder="Message..."
+          value={message}
+          onChange={(event) => {
+            setMessage(event.target.value);
+          }}
+        />
+        <button onClick={sendMessage}>Send Message</button>
+      </div>
+      <div>
       <input
         placeholder="Room Number..."
+        value={room}
         onChange={(event) => {
           setRoom(event.target.value);
         }}
       />
       <button onClick={joinRoom}> Join Room</button>
-      <input
-        placeholder="Message..."
-        onChange={(event) => {
-          setMessage(event.target.value);
-        }}
-      />
-      <button onClick={sendMessage}> Send Message</button>
-      <h1> Message:</h1>
-      {messageReceived}
+      </div>
     </div>
   );
 }
