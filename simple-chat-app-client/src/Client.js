@@ -4,7 +4,7 @@ import './Client.css'
 const socket = io.connect("http://localhost:3001");
 
 function Client() {
-  // Room State
+  
   const [room, setRoom] = useState("");
 
   // Messages States
